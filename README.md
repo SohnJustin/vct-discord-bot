@@ -40,7 +40,7 @@ A Discord bot focused on Valorant Champions Tour (VCT) data, with emphasis on th
    ```
    DISCORD_TOKEN=your_bot_token_here
    ```
-7. Invite the bot to your Discord server with the following permissions:
+7. Invite the bot to your Discord server with the following permissions (or grant Administrator for simplicity):
    - Send Messages
    - Read Message History
    - Manage Channels (required for !setup command)
@@ -65,6 +65,7 @@ A Discord bot focused on Valorant Champions Tour (VCT) data, with emphasis on th
    - `!future`: List upcoming VCT matches in North America.
    - `!team <team_id>`: Get information about a VCT team by ID.
    - `!players <team_id>`: List players for a VCT team by team ID.
+   - `!info`: Display help and usage information for the bot.
 
 ### Development
 

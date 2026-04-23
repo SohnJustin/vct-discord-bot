@@ -313,6 +313,49 @@ async def setup(ctx):
         logging.error(f"Error in setup command: {e}")
         await ctx.send(f"Error during setup: {e}")
 
+
+@bot.command()
+async def info(ctx):
+    """Display information on how to use the VCT Discord bot"""
+    embed = discord.Embed(
+        title="VCT Discord Bot - Info",
+        description="A bot for Valorant Champions Tour (VCT) data, focused on North American league. Get live games, results, and team info from vlr.gg.",
+        color=0x3498db,
+        timestamp=datetime.utcnow()
+    )
+    embed.add_field(
+        name="Commands",
+        value=(
+            "**!ping** - Test if the bot is responsive\n"
+            "**!setup** - Set up server channels (requires Manage Channels permission)\n"
+            "**!ongoing** - List current live VCT games in NA\n"
+            "**!previous [year]** - List previous game results (default: current year)\n"
+            "**!future** - List upcoming VCT matches in NA\n"
+            "**!team <team_id>** - Get information about a VCT team by ID\n"
+            "**!players <team_id>** - List players for a VCT team by team ID\n"
+            "**!info** - Show this help message"
+        ),
+        inline=False
+    )
+    embed.add_field(
+        name="Automated Features",
+        value="The bot automatically posts live games to #live-games and match results to #match-results every few minutes.",
+        inline=False
+    )
+    embed.add_field(
+        name="Data Source",
+        value="All data is fetched from vlr.gg via a local API. For team/player IDs, check vlr.gg URLs.",
+        inline=False
+    )
+    embed.add_field(
+        name="Permissions",
+        value="The bot requires Administrator permission or specific permissions (Send Messages, Manage Channels, etc.) to function properly.",
+        inline=False
+    )
+    embed.set_footer(
+        text="Bot created for VCT enthusiasts | Use !setup to prepare your server")
+    await ctx.send(embed=embed)
+
 # Add more commands here in future sprints
 
 # Run the bot
