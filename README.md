@@ -43,6 +43,7 @@ A Discord bot focused on Valorant Champions Tour (VCT) data, with emphasis on th
 7. Invite the bot to your Discord server with the following permissions:
    - Send Messages
    - Read Message History
+   - Manage Channels (required for !setup command)
    - Use Slash Commands (if using slash commands)
    - Manage Messages (optional, for cleanup)
 
@@ -58,8 +59,7 @@ A Discord bot focused on Valorant Champions Tour (VCT) data, with emphasis on th
    python discordbot.py
    ```
 4. The bot should log in and be ready.
-5. Use commands in Discord (prefix: `!`):
-   - `!ongoing`: List current live VCT games in North America.
+5. Use commands in Discord (prefix: `!`): - `!setup`: Set up server channels for the bot (requires Manage Channels permission). - `!ongoing`: List current live VCT games in North America.
    - `!previous [year]`: List previous game results (default: current year).
    - `!future`: List upcoming VCT matches in North America.
    - `!team <team_id>`: Get information about a VCT team by ID.

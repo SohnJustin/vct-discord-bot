@@ -192,6 +192,45 @@ async def players(ctx, team_id: str):
         logging.error(f"Error in players command: {e}")
         await ctx.send(f"Error fetching players: {e}")
 
+
+@bot.command()
+@commands.has_permissions(manage_channels=True)
+async def setup(ctx):
+    """Set up the server environment for the VCT bot (requires Manage Channels permission)"""
+    try:
+        guild = ctx.guild
+        existing_channels = [ch.name for ch in guild.text_channels]
+
+        channels_to_create = ['live-games', 'match-results', 'team-info']
+        created = []
+
+        for ch_name in channels_to_create:
+            if ch_name not in existing_channels:
+                await guild.create_text_channel(ch_name)
+                created.append(ch_name)
+            else:
+                created.append(f"{ch_name} (already exists)")
+
+        embed = discord.Embed(
+            title="VCT Bot Setup Complete",
+            description="The bot has set up the necessary channels for VCT information.",
+            color=0x00ff00,
+            timestamp=datetime.utcnow()
+        )
+        embed.add_field(name="Created Channels",
+                        value="\n".join(created), inline=False)
+        embed.add_field(
+            name="Next Steps",
+            value="Use commands like `!ongoing`, `!future`, etc., to get VCT data. The bot will also post updates to these channels automatically in future sprints.",
+            inline=False
+        )
+        await ctx.send(embed=embed)
+    except commands.MissingPermissions:
+        await ctx.send("You need 'Manage Channels' permission to run this command.")
+    except Exception as e:
+        logging.error(f"Error in setup command: {e}")
+        await ctx.send(f"Error during setup: {e}")
+
 # Add more commands here in future sprints
 
 # Run the bot
