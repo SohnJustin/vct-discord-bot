@@ -57,10 +57,10 @@ async def get_previous_games(year: int = datetime.now().year) -> dict:
     data = await _get_cached(url)
     # Filter to current year (assuming data has 'date' or similar field)
     # Note: API may not have year filter, so basic filtering here
-    if 'data' in data:
+    if 'data' in data and 'segments' in data['data']:
         filtered = [match for match in data['data']
-                    if str(year) in match.get('date', '')]
-        data['data'] = filtered
+                    ['segments'] if str(year) in match.get('date', '')]
+        data['data']['segments'] = filtered
     return data
 
 

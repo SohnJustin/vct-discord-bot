@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import os
 import logging
 from dotenv import load_dotenv
@@ -12,7 +12,9 @@ load_dotenv()
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 
-# Bot setup
+# Global tracking for automated posts
+posted_live_matches = set()
+posted_completed_matches = set()
 TOKEN = os.getenv('DISCORD_TOKEN')
 if not TOKEN:
     raise ValueError("DISCORD_TOKEN not found in .env file")
@@ -23,10 +25,90 @@ intents.message_content = True  # Enable if needed for message commands
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 
+@tasks.loop(minutes=5)
+async def post_live_games():
+    """Automatically post live games to #live-games channel"""
+    try:
+        data = await data_fetcher.get_ongoing_games()
+        segments = data.get('data', {}).get('segments', [])
+        if not segments:
+            return  # No live games
+
+        for guild in bot.guilds:
+            channel = discord.utils.get(guild.text_channels, name='live-games')
+            if not channel:
+                continue  # Channel not found
+
+            for match in segments:
+                match_id = match.get('match_page', '')
+                if not match_id or match_id in posted_live_matches:
+                    continue
+
+                embed = discord.Embed(
+                    title="🔴 Live VCT Game (NA)",
+                    color=0xff0000,
+                    timestamp=datetime.utcnow()
+                )
+                team1 = match.get('team1', 'Unknown')
+                team2 = match.get('team2', 'Unknown')
+                score = f"{match.get('score1', '0')}-{match.get('score2', '0')}"
+                event = match.get('match_event', 'Unknown Event')
+                link = f"https://vlr.gg/{match_id}" if match_id else "No link"
+                embed.add_field(
+                    name=f"{team1} vs {team2}", value=f"Score: {score}\nEvent: {event}\n[Watch Live]({link})", inline=False)
+                await channel.send(embed=embed)
+                posted_live_matches.add(match_id)
+                logging.info(f"Posted live match: {match_id}")
+    except Exception as e:
+        logging.error(f"Error in post_live_games: {e}")
+
+
+@tasks.loop(minutes=10)
+async def post_match_results():
+    """Automatically post match results to #match-results channel"""
+    try:
+        data = await data_fetcher.get_previous_games()
+        segments = data.get('data', {}).get('segments', [])
+        if not segments:
+            return
+
+        for guild in bot.guilds:
+            channel = discord.utils.get(
+                guild.text_channels, name='match-results')
+            if not channel:
+                continue
+
+            for match in segments[:3]:  # Post only recent ones
+                match_id = match.get('match_page', '')
+                if not match_id or match_id in posted_completed_matches:
+                    continue
+
+                embed = discord.Embed(
+                    title="🏆 Match Result (NA)",
+                    color=0x00ff00,
+                    timestamp=datetime.utcnow()
+                )
+                team1 = match.get('team1', 'Unknown')
+                team2 = match.get('team2', 'Unknown')
+                score = f"{match.get('score1', '0')}-{match.get('score2', '0')}"
+                event = match.get('match_event', 'Unknown Event')
+                link = f"https://vlr.gg/{match_id}" if match_id else "No link"
+                embed.add_field(
+                    name=f"{team1} vs {team2}", value=f"Final Score: {score}\nEvent: {event}\n[Match Details]({link})", inline=False)
+                await channel.send(embed=embed)
+                posted_completed_matches.add(match_id)
+                logging.info(f"Posted match result: {match_id}")
+    except Exception as e:
+        logging.error(f"Error in post_match_results: {e}")
+
+
 @bot.event
 async def on_ready():
     logging.info(f'Logged in as {bot.user}')
     print(f'Bot is ready! Logged in as {bot.user}')
+    # Start automated tasks
+    post_live_games.start()
+    post_match_results.start()
 
 
 @bot.command()
